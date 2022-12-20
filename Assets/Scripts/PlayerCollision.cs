@@ -15,18 +15,12 @@ public class PlayerCollision : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private Coroutine _applyRecoilToPlayerInJob;
-    private bool _isFacingRight;
 
-    void Start()
+    private void Start()
     {
         IsPlayerAbleToMove = true;
         _rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
         _animator = gameObject.GetComponent<Animator>();
-    }
-
-    void Update()
-    {
-        _isFacingRight = gameObject.GetComponent<PlayerMovement>().IsFacingRight;
     }
 
     public void GetDamage()
@@ -48,7 +42,7 @@ public class PlayerCollision : MonoBehaviour
         float maxStep;
         float gravityScaleBeforeHit = _rigidbody2D.gravityScale;
 
-        if (_isFacingRight)
+        if (gameObject.GetComponent<PlayerMovement>().IsFacingRight)
             recoilDirection = Vector3.left;
         else
             recoilDirection = Vector3.right;
