@@ -16,9 +16,9 @@ public class Coin : MonoBehaviour
 
     private void Start()
     {
-        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        _collider2D = gameObject.GetComponent<Collider2D>();
-        _audioSource = gameObject.GetComponent<AudioSource>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _collider2D = GetComponent<Collider2D>();
+        _audioSource = GetComponent<AudioSource>();
         _colorAfterCollecting = new Vector4(_spriteRenderer.color.r, _spriteRenderer.color.g, _spriteRenderer.color.b, 0);
     }
 

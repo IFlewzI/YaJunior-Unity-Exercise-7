@@ -16,101 +16,115 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer _spriteRenderer;
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
-    private bool _isRunning;
-    private bool _isFlying;
-    private bool _isJumping;
+    private bool _isAbleToMove;
+    //private bool _isRunning;
+    //private bool _isFlying;
+    //private bool _isJumping;
+    //private bool _isFalling;
+    [SerializeField] private _states _state;
+    private bool _isGrounded;
     private bool _isAbleToDoubleJump;
-    private bool _isFalling;
+
+    private enum _states
+    {
+        Idle,
+        Jump,
+        Fall,
+        Run,
+    }
 
     private void Start()
     {
-        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        _rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
-        _animator = gameObject.GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
         IsFacingRight = true;
     }
 
     private void Update()
     {
-        if (gameObject.GetComponent<PlayerCollision>().IsPlayerAbleToMove)
-        {
-            if (IsFacingRight)
-                _spriteRenderer.flipX = false;
-            else
-                _spriteRenderer.flipX = true;
+        _isAbleToMove = GetComponent<PlayerCollision>().IsAbleToMove;
 
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            {
-                transform.position += (Vector3.right * _runSpeed * Time.deltaTime);
-                IsFacingRight = true;
-                _isRunning = true;
-                _animator.SetTrigger("Run");
-            }
-            else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            {
-                transform.position += (Vector3.left * _runSpeed * Time.deltaTime);
-                IsFacingRight = false;
-                _isRunning = true;
-                _animator.SetTrigger("Run");
-            }
+        if (_isAbleToMove)
+        {
+            _spriteRenderer.flipX = !IsFacingRight;
+
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+                Run();
             else
-            {
-                _isRunning = false;
-                _animator.ResetTrigger("Run");
-            }
+                _state = _states.Idle;
 
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
                 Jump();
 
-            if (_rigidbody2D.velocity.y != 0)
-            {
-                _isFlying = true;
-
-                if (_rigidbody2D.velocity.y > 0)
-                {
-                    _isJumping = true;
-                    _animator.SetTrigger("Jump");
-                    _isFalling = false;
-                    _animator.ResetTrigger("Fall");
-                }
-                else if (_rigidbody2D.velocity.y < 0)
-                {
-                    _isJumping = false;
-                    _animator.ResetTrigger("Jump");
-                    _isFalling = true;
-                    _animator.SetTrigger("Fall");
-                }
-            }
-            else
-            {
-                _isFlying = false;
-                _isFalling = false;
-                _isJumping = false;
-            }
-
-            if (!_isRunning && !_isFlying)
-                _animator.SetTrigger("Idle");
-            else
-                _animator.ResetTrigger("Idle");
+            CheckForFlying();
+            CheckForIdle();
+            UpdateAnimatorState();
         }
         else
         {
-            _animator.ResetTrigger("Idle");
-            _animator.ResetTrigger("Fall");
-            _animator.ResetTrigger("Jump");
-            _animator.ResetTrigger("Run");
+            ResetAllTriggers();
         }
     }
 
+    private void ResetAllTriggers()
+    {
+        _animator.ResetTrigger(_states.Idle.ToString());
+        _animator.ResetTrigger(_states.Fall.ToString());
+        _animator.ResetTrigger(_states.Jump.ToString());
+        _animator.ResetTrigger(_states.Run.ToString());
+    }
+
+    private void Run()
+    {
+        _state = _states.Run;
+
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            transform.position += (Vector3.right * _runSpeed * Time.deltaTime);
+            IsFacingRight = true;
+        }
+        else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            transform.position += (Vector3.left * _runSpeed * Time.deltaTime);
+            IsFacingRight = false;
+        }
+    }
+
+    private void CheckForFlying()
+    {
+        if (_rigidbody2D.velocity.y != 0)
+        {
+            _isGrounded = false;
+
+            if (_rigidbody2D.velocity.y > 0)
+                _state = _states.Jump;
+            else if (_rigidbody2D.velocity.y < 0)
+                _state = _states.Fall;
+        }
+        else
+        {
+            _isGrounded = true;
+        }
+    }
+
+    private void CheckForIdle()
+    {
+        if (_isGrounded && _state != _states.Run)
+            _state = _states.Idle;
+    }
+
+    private void UpdateAnimatorState()
+    {
+        ResetAllTriggers();
+        _animator.SetTrigger(_state.ToString());
+    } 
+
     private void Jump()
     {
-        if (_isFlying == false || _isAbleToDoubleJump)
+        if (_isGrounded || _isAbleToDoubleJump)
         {
-            if (_isFlying)
-                _isAbleToDoubleJump = false;
-            else
-                _isAbleToDoubleJump = true;
-
+            _isAbleToDoubleJump = _isGrounded;
             _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, 0f);
             _rigidbody2D.AddForce(Vector3.up * _jumpForce);
         }

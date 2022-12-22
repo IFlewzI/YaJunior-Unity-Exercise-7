@@ -5,27 +5,36 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(AudioSource))]
 public class PlayerCollision : MonoBehaviour
 {
+    private const string HitTriggerName = "Hit";
+
     [SerializeField] private float _hitRecoilDistance;
     [SerializeField] private float _hitRecoilDuration;
 
-    public bool IsPlayerAbleToMove { get; private set; }
+    public bool IsAbleToMove { get; private set; }
 
+    private PlayerMovement _playerMovement;
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
+    private AudioSource _audioSource;
     private Coroutine _applyRecoilToPlayerInJob;
 
     private void Start()
     {
-        IsPlayerAbleToMove = true;
-        _rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
-        _animator = gameObject.GetComponent<Animator>();
+        IsAbleToMove = true;
+        _playerMovement = GetComponent<PlayerMovement>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
+        _audioSource = GetComponent<AudioSource>();
     }
 
     public void GetDamage()
     {
-        _animator.SetTrigger("Hit");
+        _animator.SetTrigger(HitTriggerName);
+        _audioSource.Play();
+        
         Debug.Log("Player Hitted");
 
         if (_applyRecoilToPlayerInJob == null)
@@ -42,14 +51,14 @@ public class PlayerCollision : MonoBehaviour
         float maxStep;
         float gravityScaleBeforeHit = _rigidbody2D.gravityScale;
 
-        if (gameObject.GetComponent<PlayerMovement>().IsFacingRight)
+        if (_playerMovement.IsFacingRight)
             recoilDirection = Vector3.left;
         else
             recoilDirection = Vector3.right;
 
         targetPosition = (transform.position + (recoilDirection * _hitRecoilDistance));
         maxStep = _hitRecoilDistance / _hitRecoilDuration;
-        IsPlayerAbleToMove = false;
+        IsAbleToMove = false;
         _rigidbody2D.gravityScale = 0;
         _rigidbody2D.velocity = Vector2.zero;
 
@@ -64,7 +73,7 @@ public class PlayerCollision : MonoBehaviour
         }
 
         _rigidbody2D.gravityScale = gravityScaleBeforeHit;
-        IsPlayerAbleToMove = true;
+        IsAbleToMove = true;
         _applyRecoilToPlayerInJob = null;
         Debug.Log("Coroutine Ended");
     }
