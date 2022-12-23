@@ -11,19 +11,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _runSpeed;
     [SerializeField] private float _jumpForce;
 
-    public bool IsFacingRight { get; private set; }
-
     private SpriteRenderer _spriteRenderer;
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private bool _isAbleToMove;
-    //private bool _isRunning;
-    //private bool _isFlying;
-    //private bool _isJumping;
-    //private bool _isFalling;
-    [SerializeField] private _states _state;
+    private _states _state;
     private bool _isGrounded;
     private bool _isAbleToDoubleJump;
+
+    public bool IsFacingRight { get; private set; }
 
     private enum _states
     {

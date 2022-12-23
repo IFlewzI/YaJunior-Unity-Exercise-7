@@ -34,8 +34,6 @@ public class PlayerCollision : MonoBehaviour
     {
         _animator.SetTrigger(HitTriggerName);
         _audioSource.Play();
-        
-        Debug.Log("Player Hitted");
 
         if (_applyRecoilToPlayerInJob == null)
             _applyRecoilToPlayerInJob = StartCoroutine(ApplyRecoilToPlayer());
@@ -43,8 +41,6 @@ public class PlayerCollision : MonoBehaviour
 
     private IEnumerator ApplyRecoilToPlayer()
     {
-        Debug.Log("Coroutine Started");
-
         Vector3 recoilDirection;
         float timeLeft = 0;
         Vector3 targetPosition;
@@ -67,14 +63,11 @@ public class PlayerCollision : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, maxStep * Time.deltaTime);
             timeLeft += Time.deltaTime;
 
-            Debug.Log("1 cicle left");
-
             yield return null;
         }
 
         _rigidbody2D.gravityScale = gravityScaleBeforeHit;
         IsAbleToMove = true;
         _applyRecoilToPlayerInJob = null;
-        Debug.Log("Coroutine Ended");
     }
 }
