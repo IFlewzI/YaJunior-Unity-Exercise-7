@@ -40,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         _isAbleToMove = GetComponent<PlayerCollision>().IsAbleToMove;
+        _isGrounded = CheckGrounding();
 
         if (_isAbleToMove)
         {
@@ -51,9 +52,14 @@ public class PlayerMovement : MonoBehaviour
                 _state = _states.Idle;
 
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-                Jump();
+            {
+                if (CheckJumpingAbility())
+                    DoJump();
+            }
 
-            CheckForFlying();
+            if (!_isGrounded)
+                SwitchFlyingState();
+
             CheckForIdle();
             UpdateAnimatorState();
         }
@@ -77,52 +83,56 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
-            transform.position += (Vector3.right * _runSpeed * Time.deltaTime);
+            transform.Translate(Vector3.right * _runSpeed * Time.deltaTime, Space.Self);
             IsFacingRight = true;
         }
         else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
-            transform.position += (Vector3.left * _runSpeed * Time.deltaTime);
+            transform.Translate(Vector3.left * _runSpeed * Time.deltaTime, Space.Self);
             IsFacingRight = false;
         }
     }
 
-    private void CheckForFlying()
+    private void SwitchFlyingState()
     {
-        if (_rigidbody2D.velocity.y != 0)
-        {
-            _isGrounded = false;
-
-            if (_rigidbody2D.velocity.y > 0)
-                _state = _states.Jump;
-            else if (_rigidbody2D.velocity.y < 0)
-                _state = _states.Fall;
-        }
-        else
-        {
-            _isGrounded = true;
-        }
+        if (_rigidbody2D.velocity.y > 0)
+            _state = _states.Jump;
+        else if (_rigidbody2D.velocity.y < 0)
+            _state = _states.Fall;
     }
 
-    private void CheckForIdle()
+    private bool CheckGrounding()
     {
-        if (_isGrounded && _state != _states.Run)
+        bool isGrounded = _rigidbody2D.velocity.y == 0;
+
+        return isGrounded;
+    }
+
+    private bool CheckForIdle()
+    {
+        bool isIdle = _isGrounded && _state != _states.Run;
+
+        if (isIdle)
             _state = _states.Idle;
+        
+        return isIdle;
+    }
+
+    private void DoJump()
+    {
+        _isAbleToDoubleJump = _isGrounded;
+        _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, 0f);
+        _rigidbody2D.AddForce(Vector2.up * _jumpForce);
+    }
+
+    private bool CheckJumpingAbility()
+    {
+        return _isGrounded || _isAbleToDoubleJump;
     }
 
     private void UpdateAnimatorState()
     {
         ResetAllTriggers();
         _animator.SetTrigger(_state.ToString());
-    } 
-
-    private void Jump()
-    {
-        if (_isGrounded || _isAbleToDoubleJump)
-        {
-            _isAbleToDoubleJump = _isGrounded;
-            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, 0f);
-            _rigidbody2D.AddForce(Vector3.up * _jumpForce);
-        }
     }
 }
