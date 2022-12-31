@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerCollision))]
+[RequireComponent(typeof(PlayerRadar))]
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
@@ -15,13 +15,13 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private bool _isAbleToMove;
-    private _states _state;
+    private States _state;
     private bool _isGrounded;
     private bool _isAbleToDoubleJump;
 
     public bool IsFacingRight { get; private set; }
 
-    private enum _states
+    private enum States
     {
         Idle,
         Jump,
@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        _isAbleToMove = GetComponent<PlayerCollision>().IsAbleToMove;
+        _isAbleToMove = GetComponent<PlayerRadar>().IsAbleToMove;
         _isGrounded = CheckGrounding();
 
         if (_isAbleToMove)
@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
                 Run();
             else
-                _state = _states.Idle;
+                _state = States.Idle;
 
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
@@ -71,15 +71,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void ResetAllTriggers()
     {
-        _animator.ResetTrigger(_states.Idle.ToString());
-        _animator.ResetTrigger(_states.Fall.ToString());
-        _animator.ResetTrigger(_states.Jump.ToString());
-        _animator.ResetTrigger(_states.Run.ToString());
+        _animator.ResetTrigger(States.Idle.ToString());
+        _animator.ResetTrigger(States.Fall.ToString());
+        _animator.ResetTrigger(States.Jump.ToString());
+        _animator.ResetTrigger(States.Run.ToString());
     }
 
     private void Run()
     {
-        _state = _states.Run;
+        _state = States.Run;
 
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
@@ -96,9 +96,9 @@ public class PlayerMovement : MonoBehaviour
     private void SwitchFlyingState()
     {
         if (_rigidbody2D.velocity.y > 0)
-            _state = _states.Jump;
+            _state = States.Jump;
         else if (_rigidbody2D.velocity.y < 0)
-            _state = _states.Fall;
+            _state = States.Fall;
     }
 
     private bool CheckGrounding()
@@ -110,10 +110,10 @@ public class PlayerMovement : MonoBehaviour
 
     private bool CheckForIdle()
     {
-        bool isIdle = _isGrounded && _state != _states.Run;
+        bool isIdle = _isGrounded && _state != States.Run;
 
         if (isIdle)
-            _state = _states.Idle;
+            _state = States.Idle;
         
         return isIdle;
     }

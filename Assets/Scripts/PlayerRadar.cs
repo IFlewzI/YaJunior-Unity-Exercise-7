@@ -6,20 +6,20 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(AudioSource))]
-public class PlayerCollision : MonoBehaviour
+public class PlayerRadar : MonoBehaviour
 {
     private const string HitTriggerName = "Hit";
 
     [SerializeField] private float _hitRecoilDistance;
     [SerializeField] private float _hitRecoilDuration;
 
-    public bool IsAbleToMove { get; private set; }
-
     private PlayerMovement _playerMovement;
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private AudioSource _audioSource;
     private Coroutine _applyRecoilToPlayerInJob;
+
+    public bool IsAbleToMove { get; private set; }
 
     private void Start()
     {

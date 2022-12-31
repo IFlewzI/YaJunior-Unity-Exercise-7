@@ -10,8 +10,6 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Hit");
-
         _hit.Invoke();
     }
 }
